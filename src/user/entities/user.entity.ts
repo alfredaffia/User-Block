@@ -1,9 +1,10 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { UserRole } from '../enum/user.role.enum';
 
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
-    id: number;
+    id: string;
 
     @Column()
     firstName: string;
@@ -19,4 +20,11 @@ export class User {
 
     @Column({ default: false })
     IsBlocked: boolean;
+
+    @Column({
+        type:'enum',
+        enum:UserRole,
+        default:UserRole.USER
+      })
+      role:UserRole
 }
