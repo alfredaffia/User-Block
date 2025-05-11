@@ -1,4 +1,4 @@
-import { HttpException, Injectable, NotFoundException, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException, Req, Res, UnauthorizedException ,HttpStatus, ForbiddenException} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,11 +10,12 @@ import * as argon2 from 'argon2';
 import { LoginDto } from './dto/login.dto';
 import { Request, Response } from 'express';
 import { UserRole } from './enum/user.role.enum';
+import { IsEmail } from 'class-validator';
 
 @Injectable()
 export class UserService {
   constructor(@InjectRepository(User) private userRepository: Repository<User>,
-    private jwtService: JwtService) { }
+    private jwtService: JwtService) { } 
   async create(payload: CreateUserDto) {
     payload.email = payload.email.toLowerCase()
     const { email, password, firstName,lastName, ...rest } = payload;
@@ -42,12 +43,18 @@ export class UserService {
     const { email, password } = payload;
     // const user = await this.userRepo.findOne({where:{email:email}  })
     const user = await this.userRepository.createQueryBuilder("user").addSelect("user.password").where("user.email = :email", { email: payload.email }).getOne()
+   
+    // console.log('Fetched User:', user);
+
     if (!user) {
       throw new HttpException('No email found', 400)
     }
+    if (user.IsBlocked === true) {
+      throw new ForbiddenException('your Accoount have been blocked' );
+    }
     const checkedPassword = await this.verifyPassword(user.password, password);
     if (!checkedPassword) {
-      throw new HttpException('sorry password not exist', 400)
+      throw new HttpException('password incorrect', 400)
     }
     const token = await this.jwtService.signAsync({
       email: user.email,
@@ -131,7 +138,6 @@ export class UserService {
   }
 
   async promoteToAdmin(id: string) {
-
     const user = await this.userRepository.findOneBy({ id });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -145,7 +151,6 @@ export class UserService {
   }
 
   async DemoteAdmin(id: string) {
-
     const user = await this.userRepository.findOneBy({ id });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -157,6 +162,34 @@ export class UserService {
     // Return only specific fields as Partial<User>
     return { id: updatedUser.id, email: updatedUser.email, role: updatedUser.role };
   }
+
+
+  async blockUser(id: string): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    user.IsBlocked = true;
+    await this.userRepository.save(user);
+
+    return { message: `User with ID ${id} has been blocked.` };
+  }
+
+  async unBlockUser(id: string): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    user.IsBlocked = false;
+    await this.userRepository.save(user);
+
+    return { message: `User with ID ${id} has been unblocked.`};
+  }
+
   async remove(id: string) {
     const result = await this.userRepository.delete(id);
     if (result.affected === 0) {
