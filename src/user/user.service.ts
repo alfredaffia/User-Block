@@ -193,7 +193,7 @@ export class UserService {
   async remove(id: string) {
     const result = await this.userRepository.delete(id);
     if (result.affected === 0) {
-      throw new NotFoundException(`Library record with ID ${id} not found`);
+      throw new NotFoundException(`user record with ID ${id} not found`);
     }
     const newresult = await this.userRepository.delete(id)
 
