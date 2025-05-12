@@ -198,7 +198,7 @@ export class UserService {
     const newresult = await this.userRepository.delete(id)
 
     return {
-      message: `Library record with ID ${id} deleted successfully`
+      message: `User record with ID ${id} deleted successfully`
     };
   }
 }
