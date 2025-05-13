@@ -116,10 +116,13 @@ export class UserService {
   }
 
   async findOne(id: string) {
+    const user = await this.userRepository.find()
+
     const findUserById = await this.userRepository.findOneBy({ id });
     if (!findUserById) {
       throw new HttpException('User not found', 404);
     }
+
     return findUserById;
   }
   async update(id: string, updateUserDto: UpdateUserDto) {
