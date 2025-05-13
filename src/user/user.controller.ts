@@ -9,6 +9,7 @@ import { Response } from 'express';
 import { Roles } from 'src/Auth/guard/role';
 import { RolesGuard } from 'src/Auth/guard/role.guard';
 
+UseGuards(AuthGuard())
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) { }
@@ -24,7 +25,9 @@ export class UserController {
     return this.userService.signIn(LoginDto, res);
   }
   @Get()
-  @UseGuards(AuthGuard(), RolesGuard)
+   @UseGuards(AuthGuard(),
+   // RolesGuard
+  )
   @Roles(UserRole.ADMIN,UserRole.SUPERADMIN) // Only allow admin to access this route
   findAll() {
     return this.userService.findAll();

@@ -49,9 +49,9 @@ export class UserService {
     if (!user) {
       throw new HttpException('No email found', 400)
     }
-    if (user.IsBlocked === true) {
-      throw new ForbiddenException('your Accoount have been blocked' );
-    }
+    // if (user.IsBlocked === true) {
+    //   throw new ForbiddenException('your Accoount have been blocked' );
+    // }
     const checkedPassword = await this.verifyPassword(user.password, password);
     if (!checkedPassword) {
       throw new HttpException('password incorrect', 400)
