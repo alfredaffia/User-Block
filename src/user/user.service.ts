@@ -16,6 +16,7 @@ import { IsEmail } from 'class-validator';
 export class UserService {
   constructor(@InjectRepository(User) private userRepository: Repository<User>,
     private jwtService: JwtService) { } 
+    
   async create(payload: CreateUserDto) {
     payload.email = payload.email.toLowerCase()
     const { email, password, firstName,lastName, ...rest } = payload;
