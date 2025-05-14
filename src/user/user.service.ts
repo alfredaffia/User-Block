@@ -1,4 +1,4 @@
-import { HttpException, Injectable, NotFoundException, Req, Res, UnauthorizedException ,HttpStatus, ForbiddenException} from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException, Req, Res, UnauthorizedException, HttpStatus, ForbiddenException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,11 +15,11 @@ import { IsEmail } from 'class-validator';
 @Injectable()
 export class UserService {
   constructor(@InjectRepository(User) private userRepository: Repository<User>,
-    private jwtService: JwtService) { } 
-    
+    private jwtService: JwtService) { }
+
   async create(payload: CreateUserDto) {
     payload.email = payload.email.toLowerCase()
-    const { email, password, firstName,lastName, ...rest } = payload;
+    const { email, password, firstName, lastName, ...rest } = payload;
     const user = await this.userRepository.findOne({ where: { email: email } });
     if (user) {
       throw new HttpException('user with this email already exist', 400)
@@ -36,6 +36,9 @@ export class UserService {
 
     const Userpayload = { id: userDetails.id, email: userDetails.email };
     return {
+      userId: userDetails.id,
+      userName: userDetails.firstName,
+      userEmail: userDetails.email,
       access_token: await this.jwtService.signAsync(Userpayload),
     };
   }
@@ -44,7 +47,7 @@ export class UserService {
     const { email, password } = payload;
     // const user = await this.userRepo.findOne({where:{email:email}  })
     const user = await this.userRepository.createQueryBuilder("user").addSelect("user.password").where("user.email = :email", { email: payload.email }).getOne()
-   
+
     // console.log('Fetched User:', user);
 
     if (!user) {
@@ -127,17 +130,17 @@ export class UserService {
     return findUserById;
   }
   async update(id: string, updateUserDto: UpdateUserDto) {
-    const newUpdate = await this.userRepository.findOne({where:{ id }})
+    const newUpdate = await this.userRepository.findOne({ where: { id } })
     if (!newUpdate) {
       throw new NotFoundException('user not found')
     }
 
     const updateUser = await this.userRepository.update(id, updateUserDto)
-    const updatedUser = await this.userRepository.findOne({where:{id}})
-    return{
-      statusCode :200,
+    const updatedUser = await this.userRepository.findOne({ where: { id } })
+    return {
+      statusCode: 200,
       message: 'user updated successfully',
-      data:updatedUser
+      data: updatedUser
     }
   }
 
@@ -191,7 +194,7 @@ export class UserService {
     user.IsBlocked = false;
     await this.userRepository.save(user);
 
-    return { message: `User with ID ${id} has been unblocked.`};
+    return { message: `User with ID ${id} has been unblocked.` };
   }
 
   async remove(id: string) {

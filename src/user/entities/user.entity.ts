@@ -26,5 +26,5 @@ export class User {
         enum:UserRole,
         default:UserRole.USER
       })
-      role:UserRole
+      role:UserRole;
 }
