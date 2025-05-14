@@ -9,7 +9,6 @@ import { Response } from 'express';
 import { Roles } from 'src/Auth/guard/role';
 import { RolesGuard } from 'src/Auth/guard/role.guard';
 
-UseGuards(AuthGuard())
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) { }
