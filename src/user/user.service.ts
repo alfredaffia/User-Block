@@ -1,4 +1,4 @@
-import { HttpException, Injectable, NotFoundException, Req, Res, UnauthorizedException, HttpStatus, ForbiddenException } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException, Req, Res, UnauthorizedException, HttpStatus, ForbiddenException, ConflictException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -133,6 +133,13 @@ export class UserService {
     const newUpdate = await this.userRepository.findOne({ where: { id } })
     if (!newUpdate) {
       throw new NotFoundException('user not found')
+    }
+    if (updateUserDto.email) {
+      updateUserDto.email = updateUserDto.email.toLowerCase();
+      const emailExists = await this.userRepository.findOne({ where: { email: updateUserDto.email } });
+      if (emailExists) {
+        throw new ConflictException('Email already exists');
+      }
     }
 
     const updateUser = await this.userRepository.update(id, updateUserDto)
